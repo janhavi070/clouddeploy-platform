@@ -23,5 +23,11 @@ spec:
           image: clouddeploy-platform:latest
           imagePullPolicy: IfNotPresent
 
+          envFrom:
+            - configMapRef:
+                name: clouddeploy-config
+            - secretRef:
+                name: clouddeploy-secret
+
           ports:
             - containerPort: 5000

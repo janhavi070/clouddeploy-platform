@@ -9,6 +9,9 @@ ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 VERSION = os.getenv("VERSION", "1.0.0")
 BUILD_NUMBER = os.getenv("BUILD_NUMBER", "local")
 
+DB_USERNAME = os.getenv("DB_USERNAME", "not-set")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "not-set")
+
 
 @app.route("/")
 def home():
@@ -18,6 +21,8 @@ def home():
         "version": VERSION,
         "build": BUILD_NUMBER,
         "hostname": socket.gethostname(),
+        "database_user": DB_USERNAME,
+        "database_connected": DB_PASSWORD != "not-set",
         "status": "healthy"
     })
 

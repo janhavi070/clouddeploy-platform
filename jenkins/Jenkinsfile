@@ -1,6 +1,14 @@
 pipeline {
     agent any
 
+    parameters {
+        choice(
+            name: 'ENVIRONMENT',
+            choices: ['development', 'qa', 'production'],
+            description: 'Select deployment environment'
+        )
+    }
+
     stages {
 
         stage('Checkout') {
@@ -23,11 +31,11 @@ pipeline {
 
         stage('Deploy with Helm') {
             steps {
-                sh '''
+                sh """
                 helm upgrade --install clouddeploy ./helm/clouddeploy \
-                  -f helm/clouddeploy/values-prod.yaml \
+                  -f helm/clouddeploy/values-${ENVIRONMENT}.yaml \
                   -n clouddeploy
-                '''
+                """
             }
         }
 
@@ -41,11 +49,11 @@ pipeline {
 
     post {
         success {
-            echo 'CloudDeploy Platform deployed successfully with Helm!'
+            echo "CloudDeploy deployed successfully to ${ENVIRONMENT}"
         }
 
         failure {
-            echo 'Deployment failed!'
+            echo "Deployment failed!"
         }
     }
 }

@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: {{ .Values.app.name }}
+  namespace: {{ .Values.namespace }}
+
+spec:
+  replicas: {{ .Values.replicaCount }}
+
+  selector:
+    matchLabels:
+      app: {{ .Values.app.label }}
+
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.app.label }}
+
+    spec:
+      containers:
+        - name: {{ .Values.app.containerName }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          envFrom:
+            - configMapRef:
+                name: clouddeploy-config
+            - secretRef:
+                name: clouddeploy-secret
+
+          ports:
+            - containerPort: {{ .Values.service.targetPort }}
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.service.targetPort }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.service.targetPort }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+          resources:
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}

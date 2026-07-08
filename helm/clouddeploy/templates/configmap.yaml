@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: clouddeploy-config
+  namespace: {{ .Values.namespace }}
+
+data:
+  APP_NAME: {{ .Values.config.appName | quote }}
+  ENVIRONMENT: {{ .Values.config.environment | quote }}
+  VERSION: {{ .Values.config.version | quote }}

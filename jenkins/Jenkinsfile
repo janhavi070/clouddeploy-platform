@@ -21,16 +21,27 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Deploy with Helm') {
             steps {
-                sh './scripts/deploy.sh'
+                sh '''
+                helm upgrade --install clouddeploy ./helm/clouddeploy \
+                  -f helm/clouddeploy/values-prod.yaml \
+                  -n clouddeploy
+                '''
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                sh 'kubectl rollout status deployment/clouddeploy-app -n clouddeploy'
+                sh 'kubectl get pods -n clouddeploy'
             }
         }
     }
 
     post {
         success {
-            echo 'CloudDeploy Platform deployed successfully!'
+            echo 'CloudDeploy Platform deployed successfully with Helm!'
         }
 
         failure {

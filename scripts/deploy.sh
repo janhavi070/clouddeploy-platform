@@ -2,19 +2,25 @@
 
 set -e
 
-NAMESPACE="clouddeploy"
-DEPLOYMENT="clouddeploy-app"
+echo "======================================="
+echo "Deploying CloudDeploy"
+echo "======================================="
 
-echo "====================================="
-echo "Deploying to Kubernetes"
-echo "====================================="
+ENVIRONMENT=${ENVIRONMENT:-development}
 
-kubectl rollout restart deployment/${DEPLOYMENT} -n ${NAMESPACE}
+helm upgrade --install clouddeploy \
+./helm/clouddeploy \
+-f helm/clouddeploy/values-${ENVIRONMENT}.yaml \
+--set image.tag=${BUILD_NUMBER:-latest} \
+--set config.buildNumber=${BUILD_NUMBER:-local} \
+--set config.gitCommit=${GIT_COMMIT:-unknown} \
+-n clouddeploy
 
-echo ""
+echo
 echo "Waiting for rollout..."
 
-kubectl rollout status deployment/${DEPLOYMENT} -n ${NAMESPACE}
+kubectl rollout status deployment/clouddeploy-app \
+-n clouddeploy
 
-echo ""
-echo "Deployment completed successfully!"
+echo
+echo "Deployment completed."

@@ -6,6 +6,9 @@ metadata:
   namespace: {{ .Values.namespace }}
 
 data:
-  APP_NAME: {{ .Values.config.appName | quote }}
-  ENVIRONMENT: {{ .Values.config.environment | quote }}
-  VERSION: {{ .Values.config.version | quote }}
+
+  APP_NAME: "{{ .Values.config.appName }}"
+
+  ENVIRONMENT: "{{ .Values.config.environment }}"
+
+  VERSION: "{{ .Values.config.version }}"

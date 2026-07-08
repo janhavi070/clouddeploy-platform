@@ -1,39 +1,14 @@
 replicaCount: 1
 
-namespace: clouddeploy
-
-app:
-  name: clouddeploy-app
-  label: clouddeploy
-  containerName: clouddeploy-container
-
-image:
-  repository: clouddeploy-platform
-  tag: latest
-  pullPolicy: IfNotPresent
-
-service:
-  type: ClusterIP
-  port: 80
-  targetPort: 5000
-
-ingress:
-  host: clouddeploy.local
-
 config:
-  appName: "CloudDeploy Platform"
-  environment: "qa"
-  version: "1.0.0"
-
-secret:
-  dbUsername: admin
-  dbPassword: supersecret123
+  environment: qa
 
 resources:
+
   requests:
-    cpu: "100m"
-    memory: "128Mi"
+    cpu: 150m
+    memory: 192Mi
 
   limits:
-    cpu: "250m"
-    memory: "256Mi"
+    cpu: 350m
+    memory: 384Mi

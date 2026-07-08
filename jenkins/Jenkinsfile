@@ -1,4 +1,5 @@
 pipeline {
+
     agent any
 
     parameters {
@@ -9,51 +10,145 @@ pipeline {
         )
     }
 
+    environment {
+        IMAGE_NAME = "janhavi070/clouddeploy-platform"
+        BUILD_TAG = "${env.BUILD_NUMBER}"
+        GIT_COMMIT_SHORT = ""
+    }
+
     stages {
 
         stage('Checkout') {
             steps {
                 checkout scm
+
+                script {
+                    env.GIT_COMMIT_SHORT = sh(
+                        script: 'git rev-parse --short HEAD',
+                        returnStdout: true
+                    ).trim()
+                }
             }
         }
 
         stage('Build Docker Image') {
+
+            environment {
+                BUILD_NUMBER = "${env.BUILD_NUMBER}"
+            }
+
             steps {
                 sh './scripts/build-image.sh'
             }
         }
 
-        stage('Load Image into Kind') {
+        stage('Push Docker Image') {
+
+            when {
+                expression {
+                    params.ENVIRONMENT == "production"
+                }
+            }
+
+            environment {
+                BUILD_NUMBER = "${env.BUILD_NUMBER}"
+            }
+
+            steps {
+
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub',
+                        usernameVariable: 'DOCKERHUB_USERNAME',
+                        passwordVariable: 'DOCKERHUB_PASSWORD'
+                    )
+                ]) {
+
+                    sh '''
+                    echo "$DOCKERHUB_PASSWORD" | docker login \
+                    -u "$DOCKERHUB_USERNAME" \
+                    --password-stdin
+
+                    ./scripts/push-image.sh
+                    '''
+
+                }
+
+            }
+        }
+
+        stage('Load Image Into Kind') {
+
+            environment {
+                BUILD_NUMBER = "${env.BUILD_NUMBER}"
+            }
+
             steps {
                 sh './scripts/load-kind.sh'
             }
+
         }
 
-        stage('Deploy with Helm') {
-            steps {
-                sh """
-		helm upgrade --install clouddeploy ./helm/clouddeploy \
-  		  -f helm/clouddeploy/values-${params.ENVIRONMENT}.yaml \
-  		  -n clouddeploy
-		"""
+        stage('Deploy With Helm') {
+
+            environment {
+                BUILD_NUMBER = "${env.BUILD_NUMBER}"
+                GIT_COMMIT = "${env.GIT_COMMIT_SHORT}"
+                ENVIRONMENT = "${params.ENVIRONMENT}"
             }
+
+            steps {
+                sh './scripts/deploy.sh'
+            }
+
         }
 
         stage('Verify Deployment') {
+
             steps {
-                sh 'kubectl rollout status deployment/clouddeploy-app -n clouddeploy'
-                sh 'kubectl get pods -n clouddeploy'
+
+                sh '''
+                kubectl rollout status deployment/clouddeploy-app -n clouddeploy
+                kubectl get pods -n clouddeploy
+                '''
+
             }
+
         }
+
+        stage('Build Summary') {
+
+            steps {
+
+                echo "========================================"
+                echo "CloudDeploy Platform"
+                echo "========================================"
+                echo "Environment : ${params.ENVIRONMENT}"
+                echo "Build       : ${env.BUILD_NUMBER}"
+                echo "Commit      : ${env.GIT_COMMIT_SHORT}"
+                echo "Image       : ${IMAGE_NAME}:${BUILD_TAG}"
+                echo "========================================"
+
+            }
+
+        }
+
     }
 
     post {
+
         success {
-            echo "CloudDeploy deployed successfully to ${params.ENVIRONMENT}"
+            echo "CloudDeploy Platform deployed successfully!"
         }
 
         failure {
             echo "Deployment failed!"
         }
+
+        always {
+            cleanWs()
+        }
+
     }
+
 }

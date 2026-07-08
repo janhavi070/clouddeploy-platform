@@ -2,15 +2,15 @@
 
 set -e
 
-CLUSTER_NAME="clouddeploy"
-IMAGE_NAME="clouddeploy-platform"
-IMAGE_TAG="latest"
-
-echo "====================================="
+echo "======================================="
 echo "Loading Docker Image into Kind"
-echo "====================================="
+echo "======================================="
 
-kind load docker-image ${IMAGE_NAME}:${IMAGE_TAG} --name ${CLUSTER_NAME}
+IMAGE_NAME=janhavi070/clouddeploy-platform
+IMAGE_TAG=${BUILD_NUMBER:-latest}
+
+kind load docker-image ${IMAGE_NAME}:${IMAGE_TAG} \
+--name clouddeploy
 
 echo ""
 echo "Image loaded successfully!"

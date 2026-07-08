@@ -12,35 +12,54 @@ pipeline {
 
     environment {
         IMAGE_NAME = "janhavi070/clouddeploy-platform"
-        BUILD_TAG = "${env.BUILD_NUMBER}"
-        GIT_COMMIT_SHORT = ""
     }
 
     stages {
 
         stage('Checkout') {
+
             steps {
+
                 checkout scm
 
                 script {
+
+                    echo "===== GIT DEBUG ====="
+
+                    sh '''
+                        pwd
+                        ls -la
+                        git status
+                        git log -1 --oneline
+                    '''
+
                     env.GIT_COMMIT_SHORT = sh(
-                        script: 'git rev-parse --short HEAD',
+                        script: "git log -1 --format=%h",
                         returnStdout: true
                     ).trim()
-		echo "Git Commit: ${env.GIT_COMMIT_SHORT}"
+
+                    echo "Git Commit: ${env.GIT_COMMIT_SHORT}"
+
                 }
+
             }
+
         }
 
         stage('Build Docker Image') {
 
-            environment {
-                BUILD_NUMBER = "${env.BUILD_NUMBER}"
+            steps {
+
+                withEnv([
+                    "BUILD_NUMBER=${env.BUILD_NUMBER}"
+                ]) {
+
+                    sh './scripts/build-image.sh'
+
+                }
+
             }
 
-            steps {
-                sh './scripts/build-image.sh'
-            }
         }
 
         stage('Push Docker Image') {
@@ -49,10 +68,6 @@ pipeline {
                 expression {
                     params.ENVIRONMENT == "production"
                 }
-            }
-
-            environment {
-                BUILD_NUMBER = "${env.BUILD_NUMBER}"
             }
 
             steps {
@@ -65,54 +80,67 @@ pipeline {
                     )
                 ]) {
 
-                    sh '''
-                    echo "$DOCKERHUB_PASSWORD" | docker login \
-                    -u "$DOCKERHUB_USERNAME" \
-                    --password-stdin
+                    withEnv([
+                        "BUILD_NUMBER=${env.BUILD_NUMBER}"
+                    ]) {
 
-                    ./scripts/push-image.sh
-                    '''
+                        sh '''
+                        echo "$DOCKERHUB_PASSWORD" | docker login \
+                        -u "$DOCKERHUB_USERNAME" \
+                        --password-stdin
+
+                        ./scripts/push-image.sh
+                        '''
+
+                    }
 
                 }
 
             }
+
         }
 
         stage('Load Image Into Kind') {
 
-            environment {
-                BUILD_NUMBER = "${env.BUILD_NUMBER}"
-            }
-
             steps {
-                sh './scripts/load-kind.sh'
+
+                withEnv([
+                    "BUILD_NUMBER=${env.BUILD_NUMBER}"
+                ]) {
+
+                    sh './scripts/load-kind.sh'
+
+                }
+
             }
 
         }
 
         stage('Deploy With Helm') {
 
-    	    steps {
+            steps {
 
-        	sh """
-        	export BUILD_NUMBER=${env.BUILD_NUMBER}
-        	export GIT_COMMIT=${env.GIT_COMMIT_SHORT}
-        	export ENVIRONMENT=${params.ENVIRONMENT}
+                withEnv([
+                    "BUILD_NUMBER=${env.BUILD_NUMBER}",
+                    "GIT_COMMIT=${env.GIT_COMMIT_SHORT}",
+                    "ENVIRONMENT=${params.ENVIRONMENT}"
+                ]) {
 
-        	./scripts/deploy.sh
-       		"""
+                    sh './scripts/deploy.sh'
 
-    	    }
+                }
 
-	}
+            }
+
+        }
 
         stage('Verify Deployment') {
 
             steps {
 
                 sh '''
-                kubectl rollout status deployment/clouddeploy-app -n clouddeploy
-                kubectl get pods -n clouddeploy
+                    kubectl rollout status deployment/clouddeploy-app -n clouddeploy
+                    kubectl get pods -n clouddeploy
                 '''
 
             }
@@ -129,7 +157,7 @@ pipeline {
                 echo "Environment : ${params.ENVIRONMENT}"
                 echo "Build       : ${env.BUILD_NUMBER}"
                 echo "Commit      : ${env.GIT_COMMIT_SHORT}"
-                echo "Image       : ${IMAGE_NAME}:${BUILD_TAG}"
+                echo "Image       : ${IMAGE_NAME}:${env.BUILD_NUMBER}"
                 echo "========================================"
 
             }

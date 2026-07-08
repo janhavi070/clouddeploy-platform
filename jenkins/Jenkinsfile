@@ -32,10 +32,10 @@ pipeline {
         stage('Deploy with Helm') {
             steps {
                 sh """
-                helm upgrade --install clouddeploy ./helm/clouddeploy \
-                  -f helm/clouddeploy/values-${ENVIRONMENT}.yaml \
-                  -n clouddeploy
-                """
+		helm upgrade --install clouddeploy ./helm/clouddeploy \
+  		  -f helm/clouddeploy/values-${params.ENVIRONMENT}.yaml \
+  		  -n clouddeploy
+		"""
             }
         }
 
@@ -49,7 +49,7 @@ pipeline {
 
     post {
         success {
-            echo "CloudDeploy deployed successfully to ${ENVIRONMENT}"
+            echo "CloudDeploy deployed successfully to ${params.ENVIRONMENT}"
         }
 
         failure {

@@ -2,13 +2,16 @@
 
 set -e
 
+IMAGE_NAME="clouddeploy-platform"
+IMAGE_TAG="latest"
+
 echo "====================================="
 echo "Building Docker Image"
 echo "====================================="
 
-docker build -t clouddeploy-platform:latest ./app
+docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ./app
 
 echo ""
 echo "Docker image built successfully!"
 
-docker images | grep clouddeploy-platform
+docker images | grep ${IMAGE_NAME}

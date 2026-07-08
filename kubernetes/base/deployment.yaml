@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: clouddeploy-container
-          image: clouddeploy-platform:1.0.0
+          image: clouddeploy-platform:latest
           imagePullPolicy: IfNotPresent
 
           ports:

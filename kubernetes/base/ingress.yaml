@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: clouddeploy-ingress
+  namespace: clouddeploy
+
+spec:
+  ingressClassName: nginx
+
+  rules:
+    - host: clouddeploy.local
+
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+
+            backend:
+              service:
+                name: clouddeploy-service
+                port:
+                  number: 80

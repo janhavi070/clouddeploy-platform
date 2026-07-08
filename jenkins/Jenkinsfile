@@ -27,6 +27,7 @@ pipeline {
                         script: 'git rev-parse --short HEAD',
                         returnStdout: true
                     ).trim()
+		echo "Git Commit: ${env.GIT_COMMIT_SHORT}"
                 }
             }
         }
@@ -91,17 +92,19 @@ pipeline {
 
         stage('Deploy With Helm') {
 
-            environment {
-                BUILD_NUMBER = "${env.BUILD_NUMBER}"
-                GIT_COMMIT = "${env.GIT_COMMIT_SHORT}"
-                ENVIRONMENT = "${params.ENVIRONMENT}"
-            }
+    	    steps {
 
-            steps {
-                sh './scripts/deploy.sh'
-            }
+        	sh """
+        	export BUILD_NUMBER=${env.BUILD_NUMBER}
+        	export GIT_COMMIT=${env.GIT_COMMIT_SHORT}
+        	export ENVIRONMENT=${params.ENVIRONMENT}
 
-        }
+        	./scripts/deploy.sh
+       		"""
+
+    	    }
+
+	}
 
         stage('Verify Deployment') {
 

@@ -8,7 +8,7 @@ app:
   containerName: clouddeploy-container
 
 image:
-  repository: clouddeploy-platform
+  repository: janhavi070/clouddeploy-platform
   tag: latest
   pullPolicy: IfNotPresent
 

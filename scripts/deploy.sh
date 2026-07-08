@@ -11,6 +11,7 @@ ENVIRONMENT=${ENVIRONMENT:-development}
 helm upgrade --install clouddeploy \
 ./helm/clouddeploy \
 -f helm/clouddeploy/values-${ENVIRONMENT}.yaml \
+--set image.repository=janhavi070/clouddeploy-platform \
 --set image.tag=${BUILD_NUMBER:-latest} \
 --set config.buildNumber=${BUILD_NUMBER:-local} \
 --set config.gitCommit=${GIT_COMMIT:-unknown} \

@@ -9,36 +9,32 @@ pipeline {
             }
         }
 
-        stage('Verify Environment') {
+        stage('Build Docker Image') {
             steps {
-                sh 'echo "Current Directory:"'
-                sh 'pwd'
+                sh './scripts/build-image.sh'
+            }
+        }
 
-                sh 'echo "Repository Files:"'
-                sh 'ls -la'
+        stage('Load Image into Kind') {
+            steps {
+                sh './scripts/load-kind.sh'
+            }
+        }
 
-                sh 'echo "Git Version:"'
-                sh 'git --version'
-
-                sh 'echo "Docker Version:"'
-                sh 'docker --version'
-
-                sh 'echo "Kubectl Version:"'
-                sh 'kubectl version --client'
-
-                sh 'echo "Kind Version:"'
-                sh 'kind version'
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh './scripts/deploy.sh'
             }
         }
     }
 
     post {
         success {
-            echo 'Pipeline completed successfully!'
+            echo 'CloudDeploy Platform deployed successfully!'
         }
 
         failure {
-            echo 'Pipeline failed.'
+            echo 'Deployment failed!'
         }
     }
 }

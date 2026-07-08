@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: clouddeploy-app
+  namespace: clouddeploy
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: clouddeploy
+
+  template:
+    metadata:
+      labels:
+        app: clouddeploy
+
+    spec:
+      containers:
+        - name: clouddeploy-container
+          image: clouddeploy-platform:1.0.0
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 5000

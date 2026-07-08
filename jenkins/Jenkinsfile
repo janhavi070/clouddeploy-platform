@@ -1,0 +1,44 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Verify Environment') {
+            steps {
+                sh 'echo "Current Directory:"'
+                sh 'pwd'
+
+                sh 'echo "Repository Files:"'
+                sh 'ls -la'
+
+                sh 'echo "Git Version:"'
+                sh 'git --version'
+
+                sh 'echo "Docker Version:"'
+                sh 'docker --version'
+
+                sh 'echo "Kubectl Version:"'
+                sh 'kubectl version --client'
+
+                sh 'echo "Kind Version:"'
+                sh 'kind version'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+
+        failure {
+            echo 'Pipeline failed.'
+        }
+    }
+}

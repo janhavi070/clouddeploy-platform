@@ -1,0 +1,28 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Environment files
+.env
+
+# Jenkins
+workspace/
+
+# Misc
+*.swp

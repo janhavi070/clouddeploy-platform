@@ -24,15 +24,6 @@ pipeline {
 
                 script {
 
-                    echo "===== GIT DEBUG ====="
-
-                    sh '''
-                        pwd
-                        ls -la
-                        git status
-                        git log -1 --oneline
-                    '''
-
                     env.GIT_COMMIT_SHORT = sh(
                         script: "git log -1 --format=%h",
                         returnStdout: true
